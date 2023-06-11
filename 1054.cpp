@@ -1,57 +1,60 @@
 #include <iostream>
-#include <cstdlib>
-#define FootLoc(p)  p + p->size - 1
+#include <algorithm>
+#include <cstdio>
+#include <vector>
 using namespace std;
 
-typedef struct WORD {
-    union {
-        WORD *llink;
-        WORD *uplink;
-    };
-    int tag;
+typedef struct node {
+    int addr;
     int size;
-    WORD *rlink;
-}WORD, head, foot, *Space;
-Space s;
+}node;
+int a, s;
+vector<node> space;
 
-void CreateSpace(int addr, int size)
+bool cmp(node a, node b)
 {
-    WORD *p;
-    p = (WORD *)malloc(sizeof(WORD));
-    if(s->rlink == NULL) {
-        s->rlink = p;
-        p->llink = s;
-        p->rlink = FootLoc(p);
-        p->size = size;
-        
-    }
-
-}
-
-void FreeSpace(int addr, int size)
-{
-
-}
-
-// Get free spaces and recycle spaces
-void init()
-{
-    char tag;
-    int addr, size;
-    while((tag = getchar()) != EOF) {
-        if(tag == '0') {
-            scanf("%d %d\n", &addr, &size);
-            CreateSpace(addr, size);
-        } else if(tag == '1') {
-            scanf("%d %d\n", &addr, &size);
-            FreeSpace(addr, size);
-        } else if(tag == '\n') {
-            continue;
-        }
-    }
+    return a.addr < b.addr;
 }
 
 int main()
 {
-
+    char c;
+    while((c = getchar()) != EOF) {
+        if(c == '0') {   // Empty space
+            scanf(" %d %d\n", &a, &s);
+            space.push_back({a, s});
+        }else if(c == '1') { // recycle space
+            scanf(" %d %d\n", &a, &s);
+            bool isMerge = false;
+            for(int i = 0; i < space.size(); i++) {
+                if(a+s == space[i].addr) {
+                    space[i].addr = a;
+                    space[i].size += s;
+                    isMerge = true;
+                    break;
+                } else if(a == space[i].addr + space[i].size) {
+                    space[i].size += s;
+                    isMerge = true;
+                    break;
+                } else if(i != space.size() - 1 && space[i].addr + space[i].size >= a && a+s >= space[i+1].addr) {
+                    space[i].size = space[i+1].addr - space[i].addr + space[i+1].size;
+                    space.erase(space.begin()+i+1);
+                    isMerge = true;
+                    break;
+                }
+            }
+            if(!isMerge) {
+                space.push_back({a, s});
+            }
+        }
+        // getchar(); // '\n'
+    }
+    sort(space.begin(), space.end(), cmp);
+    for(int i=0; i<space.size(); i++) {
+        printf("0 %d %d", space[i].addr, space[i].size);
+        if(i != space.size()-1) {
+            printf("\n");
+        }
+    }
+    return 0;
 }
